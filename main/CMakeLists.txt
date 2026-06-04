@@ -1,0 +1,22 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "lan_tcp_sender.c"
+        "ui_Screen1.c"
+        "ui_Screen2.c"
+        "ui_Emergency_Panel.c"
+        "ui_Call_Panel.c"
+        "ui_Code_Blue_Panel.c"
+        "ui_Toilet_Emergency_Panel.c"
+        "ui.c"
+        "ui_comp_hook.c"
+        "ui_helpers.c"
+        "ui_events.c"
+        "ui_img_hospital_bg_png_png.c"
+        "ui_img_1755073793.c"
+    INCLUDE_DIRS
+        "."
+    REQUIRES
+        waveshare__esp32_p4_wifi6_touch_lcd_4b
+        lvgl
+)
