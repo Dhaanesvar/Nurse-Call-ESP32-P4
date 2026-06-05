@@ -4,6 +4,7 @@
 // Project name: SquareLine_Project
 
 #include "ui.h"
+#include "alert_audio.h"
 #include "lan_tcp_sender.h"
 
 lv_obj_t * uic_Label18;
@@ -40,7 +41,8 @@ void ui_event_Button4(lv_event_t * e)
 
     if(event_code == LV_EVENT_PRESSED) {
         lan_tcp_send_event_json("emergency_call");
-        _ui_screen_change(&ui_Emergency_Panel, LV_SCR_LOAD_ANIM_FADE_ON, 1, 0, &ui_Emergency_Panel_screen_init);
+        nurse_audio_start(NURSE_ALERT_EMERGENCY);
+        _ui_screen_change(&ui_Emergency_Panel, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Emergency_Panel_screen_init);
     }
 }
 
@@ -50,7 +52,8 @@ void ui_event_Button3(lv_event_t * e)
 
     if(event_code == LV_EVENT_CLICKED) {
         lan_tcp_send_event_json("call_assistance");
-        _ui_screen_change(&ui_Call_Panel, LV_SCR_LOAD_ANIM_FADE_ON, 10, 0, &ui_Call_Panel_screen_init);
+        nurse_audio_start(NURSE_ALERT_CALL);
+        _ui_screen_change(&ui_Call_Panel, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Call_Panel_screen_init);
     }
 }
 
@@ -60,7 +63,8 @@ void ui_event_Button5(lv_event_t * e)
 
     if(event_code == LV_EVENT_PRESSED) {
         lan_tcp_send_event_json("code_blue");
-        _ui_screen_change(&ui_Code_Blue_Panel, LV_SCR_LOAD_ANIM_FADE_ON, 1, 0, &ui_Code_Blue_Panel_screen_init);
+        nurse_audio_start(NURSE_ALERT_CODE_BLUE);
+        _ui_screen_change(&ui_Code_Blue_Panel, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Code_Blue_Panel_screen_init);
     }
 }
 
@@ -70,7 +74,8 @@ void ui_event_Button6(lv_event_t * e)
 
     if(event_code == LV_EVENT_PRESSED) {
         lan_tcp_send_event_json("toilet_emergency");
-        _ui_screen_change(&ui_Toilet_Emergency_Panel, LV_SCR_LOAD_ANIM_FADE_ON, 1, 0, &ui_Toilet_Emergency_Panel_screen_init);
+        nurse_audio_start(NURSE_ALERT_TOILET_EMERGENCY);
+        _ui_screen_change(&ui_Toilet_Emergency_Panel, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Toilet_Emergency_Panel_screen_init);
     }
 }
 
@@ -80,7 +85,8 @@ void ui_event_Button7(lv_event_t * e)
 
     if(event_code == LV_EVENT_PRESSED) {
         lan_tcp_send_event_json("cancel_call");
-        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_Screen1_screen_init);
+        nurse_audio_stop();
+        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Screen1_screen_init);
     }
 }
 
@@ -90,7 +96,8 @@ void ui_event_Button9(lv_event_t * e)
 
     if(event_code == LV_EVENT_PRESSED) {
         lan_tcp_send_event_json("back");
-        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 10, 0, &ui_Screen1_screen_init);
+        nurse_audio_stop();
+        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Screen1_screen_init);
     }
 }
 

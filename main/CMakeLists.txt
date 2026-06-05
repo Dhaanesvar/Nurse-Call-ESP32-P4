@@ -1,6 +1,7 @@
 idf_component_register(
     SRCS
         "main.c"
+        "alert_audio.c"
         "lan_tcp_sender.c"
         "ui_Screen1.c"
         "ui_Screen2.c"
@@ -19,4 +20,5 @@ idf_component_register(
     REQUIRES
         waveshare__esp32_p4_wifi6_touch_lcd_4b
         lvgl
+        spiffs
 )
