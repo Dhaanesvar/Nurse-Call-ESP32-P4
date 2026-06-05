@@ -50,7 +50,10 @@ void _ui_screen_change(lv_obj_t ** target, lv_scr_load_anim_t fademode, int spd,
 {
     if(*target == NULL)
         target_init();
-    lv_scr_load_anim(*target, fademode, spd, delay, false);
+    (void)fademode;
+    (void)spd;
+    (void)delay;
+    lv_scr_load_anim(*target, LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
 }
 
 void _ui_screen_delete(void (*target)(void))

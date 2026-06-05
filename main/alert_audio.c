@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "bsp/esp-bsp.h"
 #include "esp_codec_dev.h"
@@ -15,12 +16,12 @@
 
 // Voice tuning reference values.
 #define MP3_READ_BUF_SIZE 8192
-#define MP3_OUTPUT_VOLUME_PERCENT 40
+#define MP3_OUTPUT_VOLUME_PERCENT 60
 #define MP3_OUTPUT_SAMPLE_RATE 48000
-#define MP3_ENABLE_DSP_ENHANCER 0
+#define MP3_ENABLE_DSP_ENHANCER 1
 #define MP3_PREAMP_NUM 200
 #define MP3_PREAMP_DEN 130
-#define MP3_HPF_ALPHA_NUM 1000
+#define MP3_HPF_ALPHA_NUM 995
 #define MP3_HPF_ALPHA_DEN 1000
 #define MP3_LIMITER_THRESHOLD 28000
 #define MP3_RESAMPLE_MAX_RATIO 4
@@ -74,6 +75,8 @@ static int s_audio_rate_hz = AUDIO_SAMPLE_RATE_HZ;
 static int s_audio_channels = AUDIO_CHANNELS;
 static bool s_spiffs_checked = false;
 static bool s_spiffs_ready = false;
+static int32_t s_hpf_prev_x[2] = {0, 0};
+static int32_t s_hpf_prev_y[2] = {0, 0};
 
 static void ensure_spiffs_mounted(void)
 {
@@ -110,6 +113,151 @@ static const alert_profile_t *get_profile(nurse_alert_type_t type)
         }
     }
     return &s_profiles[0];
+}
+
+static uint16_t read_le16(const uint8_t *p)
+{
+    return (uint16_t)p[0] | ((uint16_t)p[1] << 8);
+}
+
+static uint32_t read_le32(const uint8_t *p)
+{
+    return (uint32_t)p[0] | ((uint32_t)p[1] << 8) | ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24);
+}
+
+static bool file_exists(const char *path)
+{
+    struct stat st;
+    return path != NULL && stat(path, &st) == 0;
+}
+
+static const char *resolve_voice_path(const char *base_path, char *out_path, size_t out_len)
+{
+    static const char *suffixes[] = {
+        "_male_clear.wav",
+        "_male.wav",
+        "_clear.wav",
+    };
+    const char *ext;
+    size_t stem_len;
+    size_t i;
+
+    if(base_path == NULL || out_path == NULL || out_len == 0) {
+        return base_path;
+    }
+
+    ext = strrchr(base_path, '.');
+    if(ext == NULL || strcmp(ext, ".wav") != 0) {
+        return base_path;
+    }
+
+    stem_len = (size_t)(ext - base_path);
+    for(i = 0; i < sizeof(suffixes) / sizeof(suffixes[0]); i++) {
+        int n = snprintf(out_path, out_len, "%.*s%s", (int)stem_len, base_path, suffixes[i]);
+        if(n > 0 && (size_t)n < out_len && file_exists(out_path)) {
+            return out_path;
+        }
+    }
+
+    return base_path;
+}
+
+static bool parse_wav_header(FILE *f, int *sample_rate_hz, int *channels, int *bits_per_sample)
+{
+    uint8_t hdr[12];
+    bool has_fmt = false;
+    bool has_data = false;
+
+    if(fread(hdr, 1, sizeof(hdr), f) != sizeof(hdr)) {
+        return false;
+    }
+    if(memcmp(hdr, "RIFF", 4) != 0 || memcmp(&hdr[8], "WAVE", 4) != 0) {
+        return false;
+    }
+
+    while(!has_data) {
+        uint8_t chdr[8];
+        uint32_t chunk_size;
+
+        if(fread(chdr, 1, sizeof(chdr), f) != sizeof(chdr)) {
+            break;
+        }
+
+        chunk_size = read_le32(&chdr[4]);
+
+        if(memcmp(chdr, "fmt ", 4) == 0) {
+            uint8_t fmt[16];
+            if(chunk_size < sizeof(fmt) || fread(fmt, 1, sizeof(fmt), f) != sizeof(fmt)) {
+                return false;
+            }
+
+            if(read_le16(&fmt[0]) != 1) {
+                return false;
+            }
+
+            *channels = (int)read_le16(&fmt[2]);
+            *sample_rate_hz = (int)read_le32(&fmt[4]);
+            *bits_per_sample = (int)read_le16(&fmt[14]);
+            has_fmt = true;
+
+            if(chunk_size > sizeof(fmt)) {
+                if(fseek(f, (long)(chunk_size - sizeof(fmt)), SEEK_CUR) != 0) {
+                    return false;
+                }
+            }
+        } else if(memcmp(chdr, "data", 4) == 0) {
+            has_data = true;
+            break;
+        } else {
+            if(fseek(f, (long)chunk_size, SEEK_CUR) != 0) {
+                return false;
+            }
+        }
+
+        if(chunk_size & 1U) {
+            if(fseek(f, 1, SEEK_CUR) != 0) {
+                return false;
+            }
+        }
+    }
+
+    return has_fmt && has_data;
+}
+
+static void reset_dsp_state(void)
+{
+    s_hpf_prev_x[0] = 0;
+    s_hpf_prev_x[1] = 0;
+    s_hpf_prev_y[0] = 0;
+    s_hpf_prev_y[1] = 0;
+}
+
+static void enhance_pcm_voice(int16_t *samples, size_t sample_count, int channels)
+{
+    size_t i;
+
+    if(samples == NULL || channels <= 0) {
+        return;
+    }
+
+    for(i = 0; i < sample_count; i++) {
+        int ch = (channels == 2) ? (int)(i & 1U) : 0;
+        int32_t x = samples[i];
+        int32_t y;
+
+        x = (x * MP3_PREAMP_NUM) / MP3_PREAMP_DEN;
+        y = x - s_hpf_prev_x[ch] + (s_hpf_prev_y[ch] * MP3_HPF_ALPHA_NUM) / MP3_HPF_ALPHA_DEN;
+        s_hpf_prev_x[ch] = x;
+        s_hpf_prev_y[ch] = y;
+
+        if(y > MP3_LIMITER_THRESHOLD) {
+            y = MP3_LIMITER_THRESHOLD;
+        } else if(y < -MP3_LIMITER_THRESHOLD) {
+            y = -MP3_LIMITER_THRESHOLD;
+        }
+
+        samples[i] = (int16_t)y;
+    }
 }
 
 static bool open_audio_path(int sample_rate_hz, int channels)
@@ -193,37 +341,38 @@ static bool play_wav_file(const char *path)
 {
     FILE *f;
     uint8_t buf[1024];
-    uint8_t header[44];
+    char resolved_path[MP3_PATH_MAX_LEN];
     bool played_any = false;
     int sample_rate_hz = AUDIO_SAMPLE_RATE_HZ;
     int channels = AUDIO_CHANNELS;
     int bits_per_sample = AUDIO_BITS_PER_SAMPLE;
+    const char *effective_path;
 
     if(!s_spiffs_ready || path == NULL) {
         return false;
     }
 
-    f = fopen(path, "rb");
+    effective_path = resolve_voice_path(path, resolved_path, sizeof(resolved_path));
+
+    f = fopen(effective_path, "rb");
     if(f == NULL) {
         return false;
     }
 
-    if(fread(header, 1, sizeof(header), f) == sizeof(header)) {
-        if(memcmp(header, "RIFF", 4) == 0 && memcmp(&header[8], "WAVE", 4) == 0) {
-            channels = (int)(header[22] | (header[23] << 8));
-            sample_rate_hz = (int)(header[24] | (header[25] << 8) | (header[26] << 16) | (header[27] << 24));
-            bits_per_sample = (int)(header[34] | (header[35] << 8));
-        } else {
-            // Not a canonical WAV header: restart and play as raw PCM with default format.
-            (void)fseek(f, 0, SEEK_SET);
-        }
-    } else {
+    if(!parse_wav_header(f, &sample_rate_hz, &channels, &bits_per_sample)) {
+        ESP_LOGW(TAG, "Invalid WAV header: %s", effective_path);
         fclose(f);
         return false;
     }
 
     if(bits_per_sample != 16) {
-        ESP_LOGW(TAG, "Unsupported WAV depth (%d): %s", bits_per_sample, path);
+        ESP_LOGW(TAG, "Unsupported WAV depth (%d): %s", bits_per_sample, effective_path);
+        fclose(f);
+        return false;
+    }
+
+    if(channels != 1 && channels != 2) {
+        ESP_LOGW(TAG, "Unsupported WAV channels (%d): %s", channels, effective_path);
         fclose(f);
         return false;
     }
@@ -233,11 +382,24 @@ static bool play_wav_file(const char *path)
         return false;
     }
 
+    reset_dsp_state();
+
     while(!s_stop_requested) {
         size_t n = fread(buf, 1, sizeof(buf), f);
         if(n == 0) {
             break;
         }
+
+        if(MP3_ENABLE_DSP_ENHANCER && (n >= sizeof(int16_t))) {
+            size_t pcm_bytes = n & ~(sizeof(int16_t) - 1U);
+            enhance_pcm_voice((int16_t *)buf, pcm_bytes / sizeof(int16_t), channels);
+            n = pcm_bytes;
+        }
+
+        if(n == 0) {
+            continue;
+        }
+
         played_any = true;
         (void)esp_codec_dev_write(s_speaker, buf, (int)n);
     }
