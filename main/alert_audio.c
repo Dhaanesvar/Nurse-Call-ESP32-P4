@@ -122,6 +122,9 @@ static bool open_audio_path(int sample_rate_hz, int channels)
     }
 
     if(s_audio_opened && s_audio_rate_hz == sample_rate_hz && s_audio_channels == channels) {
+        if(esp_codec_dev_set_out_mute(s_speaker, false) != ESP_CODEC_DEV_OK) {
+            ESP_LOGW(TAG, "failed to unmute speaker");
+        }
         return true;
     }
 
@@ -166,6 +169,10 @@ static void close_audio_path(void)
 {
     if(s_speaker != NULL) {
         (void)esp_codec_dev_set_out_mute(s_speaker, true);
+        if(s_audio_opened) {
+            (void)esp_codec_dev_close(s_speaker);
+            s_audio_opened = false;
+        }
     }
 }
 

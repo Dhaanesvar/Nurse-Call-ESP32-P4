@@ -15,10 +15,8 @@ extern void ui_Screen1_screen_init(void);
 extern void ui_Screen1_screen_destroy(void);
 extern void ui_Screen1_screen_relocalize(void);
 extern lv_obj_t * ui_Screen1;
-extern lv_obj_t * ui_Image1;
 extern lv_obj_t * ui_Panel1;
 extern lv_obj_t * ui_Panel2;
-extern lv_obj_t * ui_Image2;
 extern lv_obj_t * ui_Label1;
 extern lv_obj_t * ui_Panel3;
 extern lv_obj_t * ui_Label2;
@@ -31,11 +29,13 @@ extern void ui_event_Button2(lv_event_t * e);
 extern lv_obj_t * ui_Button2;
 extern lv_obj_t * ui_Label13;
 extern lv_obj_t * ui_Label3;
+extern lv_obj_t * ui_Image2;
+extern void ui_event_Switch1(lv_event_t * e);
+extern lv_obj_t * ui_Switch1;
+extern lv_obj_t * ui_Label25;
 // CUSTOM VARIABLES
-extern lv_obj_t * uic_Image1;
 extern lv_obj_t * uic_Panel1;
 extern lv_obj_t * uic_Panel2;
-extern lv_obj_t * uic_Image2;
 extern lv_obj_t * uic_Label1;
 extern lv_obj_t * uic_Panel3;
 extern lv_obj_t * uic_Label2;
@@ -47,6 +47,7 @@ extern lv_obj_t * uic_Label7;
 extern lv_obj_t * uic_Button2;
 extern lv_obj_t * uic_Label13;
 extern lv_obj_t * uic_Label3;
+extern lv_obj_t * uic_Switch1;
 
 #ifdef __cplusplus
 } /*extern "C"*/

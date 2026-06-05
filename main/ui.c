@@ -15,8 +15,12 @@ lv_obj_t * ui____initial_actions0;
 // IMAGES AND IMAGE SETS
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
-// Keep these checks non-fatal so project builds across board defaults.
-// Visual output is still best with LV_COLOR_DEPTH=32 and LV_COLOR_16_SWAP=0.
+#if LV_COLOR_DEPTH != 16
+    #error "LV_COLOR_DEPTH should be 16bit for this project (RGB565)"
+#endif
+#if LV_COLOR_16_SWAP !=0
+    #error "LV_COLOR_16_SWAP should be 0 to match SquareLine Studio's settings"
+#endif
 
 ///////////////////// ANIMATIONS ////////////////////
 lv_anim_t * Blink_Animation(lv_obj_t * TargetObject, int delay)

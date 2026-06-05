@@ -4,8 +4,82 @@
 // Project name: SquareLine_Project
 
 #include "ui.h"
+#include "alert_audio.h"
+#include "bsp/esp-bsp.h"
+#include <stdbool.h>
+
+static bool s_dark_mode_enabled = false;
+static lv_obj_t *s_status_banner = NULL;
+static lv_obj_t *s_status_label = NULL;
+
+static void ui_show_notification(const char *msg)
+{
+	lv_obj_t * scr = lv_scr_act();
+
+	if(s_status_banner != NULL && !lv_obj_is_valid(s_status_banner)) {
+		s_status_banner = NULL;
+		s_status_label = NULL;
+	}
+
+	if(s_status_banner == NULL) {
+		s_status_banner = lv_obj_create(scr);
+		lv_obj_set_size(s_status_banner, 620, 58);
+		lv_obj_align(s_status_banner, LV_ALIGN_TOP_MID, 0, 12);
+		lv_obj_clear_flag(s_status_banner, LV_OBJ_FLAG_SCROLLABLE);
+		lv_obj_set_style_radius(s_status_banner, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_bg_color(s_status_banner, lv_color_hex(0x1F2933), LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_bg_opa(s_status_banner, 235, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_border_width(s_status_banner, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_pad_all(s_status_banner, 8, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+		s_status_label = lv_label_create(s_status_banner);
+		lv_label_set_long_mode(s_status_label, LV_LABEL_LONG_WRAP);
+		lv_obj_set_width(s_status_label, 600);
+		lv_obj_center(s_status_label);
+		lv_obj_set_style_text_color(s_status_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_text_font(s_status_label, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+	}
+
+	lv_label_set_text(s_status_label, msg);
+}
+
+void ui_clear_notification(void)
+{
+	if(s_status_banner != NULL && lv_obj_is_valid(s_status_banner)) {
+		lv_obj_del(s_status_banner);
+	}
+	s_status_banner = NULL;
+	s_status_label = NULL;
+}
+
+void ui_apply_dark_mode(void)
+{
+	if(s_dark_mode_enabled) {
+		bsp_display_brightness_set(50);
+	} else {
+		bsp_display_brightness_set(100);
+	}
+}
+
+bool ui_is_dark_mode_enabled(void)
+{
+	return s_dark_mode_enabled;
+}
 
 void on_in_progress_click(lv_event_t * e)
 {
-	// Your code here
+	lv_event_code_t event_code = lv_event_get_code(e);
+
+	if(event_code == LV_EVENT_PRESSED || event_code == LV_EVENT_CLICKED) {
+		nurse_audio_stop();
+		ui_show_notification("In Progress update has been sent to the nurse station.");
+		ui_apply_dark_mode();
+	}
+}
+
+void GOES_DARK(lv_event_t * e)
+{
+	lv_obj_t * sw = lv_event_get_target(e);
+	s_dark_mode_enabled = lv_obj_has_state(sw, LV_STATE_CHECKED);
+	ui_apply_dark_mode();
 }

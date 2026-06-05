@@ -14,6 +14,7 @@ idf_component_register(
         "ui_helpers.c"
         "ui_events.c"
         "ui_img_hospital_bg_png_png.c"
+        "ui_img_1755073793.c"
         "ui_img_image_png.c"
     INCLUDE_DIRS
         "."

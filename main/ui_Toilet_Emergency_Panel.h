@@ -17,9 +17,11 @@ extern void ui_Toilet_Emergency_Panel_screen_relocalize(void);
 extern lv_obj_t * ui_Toilet_Emergency_Panel;
 extern lv_obj_t * ui_Panel9;
 extern lv_obj_t * ui_Label23;
-extern void ui_event_Button12(lv_event_t * e);
 extern lv_obj_t * ui_Button12;
 extern lv_obj_t * ui_Label24;
+extern void ui_event_Button15(lv_event_t * e);
+extern lv_obj_t * ui_Button15;
+extern lv_obj_t * ui_Label30;
 // CUSTOM VARIABLES
 extern lv_obj_t * uic_Toilet_Emergency_Panel;
 extern lv_obj_t * uic_Panel9;

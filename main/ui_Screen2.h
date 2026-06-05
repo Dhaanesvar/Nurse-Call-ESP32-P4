@@ -15,7 +15,6 @@ extern void ui_Screen2_screen_init(void);
 extern void ui_Screen2_screen_destroy(void);
 extern void ui_Screen2_screen_relocalize(void);
 extern lv_obj_t * ui_Screen2;
-extern lv_obj_t * ui_Image3;
 extern void ui_event_Button4(lv_event_t * e);
 extern lv_obj_t * ui_Button4;
 extern void ui_event_Button3(lv_event_t * e);
@@ -34,8 +33,8 @@ extern lv_obj_t * ui_Label12;
 extern void ui_event_Button9(lv_event_t * e);
 extern lv_obj_t * ui_Button9;
 extern lv_obj_t * ui_Label18;
+extern lv_obj_t * ui_Label26;
 // CUSTOM VARIABLES
-extern lv_obj_t * uic_Image3;
 extern lv_obj_t * uic_Button4;
 extern lv_obj_t * uic_Button3;
 extern lv_obj_t * uic_Button5;
