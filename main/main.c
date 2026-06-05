@@ -8,11 +8,11 @@ void app_main(void)
 {
 	bsp_display_cfg_t cfg = {
 		.lvgl_port_cfg = ESP_LVGL_PORT_INIT_CONFIG(),
-		.buffer_size = BSP_LCD_H_RES * 20,
+		.buffer_size = BSP_LCD_H_RES * BSP_LCD_V_RES,
 		.double_buffer = true,
 		.flags = {
-			.buff_dma = true,
-			.buff_spiram = false,
+			.buff_dma = false,
+			.buff_spiram = true,
 			.sw_rotate = false,
 		},
 	};

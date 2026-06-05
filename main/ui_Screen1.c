@@ -16,7 +16,6 @@ lv_obj_t * uic_Label4;
 lv_obj_t * uic_Label2;
 lv_obj_t * uic_Panel3;
 lv_obj_t * uic_Label1;
-lv_obj_t * uic_Image2;
 lv_obj_t * uic_Panel2;
 lv_obj_t * uic_Panel1;
 lv_obj_t * uic_Image1;
@@ -24,7 +23,6 @@ lv_obj_t * ui_Screen1 = NULL;
 lv_obj_t * ui_Image1 = NULL;
 lv_obj_t * ui_Panel1 = NULL;
 lv_obj_t * ui_Panel2 = NULL;
-lv_obj_t * ui_Image2 = NULL;
 lv_obj_t * ui_Label1 = NULL;
 lv_obj_t * ui_Panel3 = NULL;
 lv_obj_t * ui_Label2 = NULL;
@@ -36,13 +34,14 @@ lv_obj_t * ui_Label7 = NULL;
 lv_obj_t * ui_Button2 = NULL;
 lv_obj_t * ui_Label13 = NULL;
 lv_obj_t * ui_Label3 = NULL;
+lv_obj_t * ui_Image2 = NULL;
 // event funtions
 void ui_event_Button2(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_PRESSED) {
-        _ui_screen_change(&ui_Screen2, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Screen2_screen_init);
+        _ui_screen_change(&ui_Screen2, LV_SCR_LOAD_ANIM_OUT_BOTTOM, 5, 0, &ui_Screen2_screen_init);
     }
 }
 
@@ -81,30 +80,17 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_align(ui_Panel2, LV_ALIGN_CENTER);
     lv_obj_clear_flag(ui_Panel2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_bg_color(ui_Panel2, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(ui_Panel2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Panel2, 200, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_shadow_color(ui_Panel2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_shadow_opa(ui_Panel2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_shadow_width(ui_Panel2, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_shadow_spread(ui_Panel2, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_Image2 = lv_img_create(ui_Screen1);
-    lv_img_set_src(ui_Image2, &ui_img_1755073793);
-    lv_obj_set_width(ui_Image2, LV_SIZE_CONTENT);   /// 192
-    lv_obj_set_height(ui_Image2, LV_SIZE_CONTENT);    /// 192
-    lv_obj_set_x(ui_Image2, -210);
-    lv_obj_set_y(ui_Image2, -8);
-    lv_obj_set_align(ui_Image2, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_Image2, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
-    lv_obj_clear_flag(ui_Image2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_img_set_zoom(ui_Image2, 256);
-    lv_img_set_antialias(ui_Image2, false);
-    lv_obj_set_style_img_opa(ui_Image2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-
     ui_Label1 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label1, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label1, LV_SIZE_CONTENT);    /// 1
     lv_obj_set_x(ui_Label1, -209);
-    lv_obj_set_y(ui_Label1, -104);
+    lv_obj_set_y(ui_Label1, -112);
     lv_obj_set_align(ui_Label1, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label1, "BED NO. 160");
     lv_obj_set_style_text_font(ui_Label1, &lv_font_montserrat_26, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -233,11 +219,21 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_style_text_decor(ui_Label3, LV_TEXT_DECOR_UNDERLINE, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_Label3, &lv_font_montserrat_46, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    ui_Image2 = lv_img_create(ui_Screen1);
+    lv_img_set_src(ui_Image2, &ui_img_image_png);
+    lv_obj_set_width(ui_Image2, LV_SIZE_CONTENT);   /// 225
+    lv_obj_set_height(ui_Image2, LV_SIZE_CONTENT);    /// 225
+    lv_obj_set_x(ui_Image2, -210);
+    lv_obj_set_y(ui_Image2, -8);
+    lv_obj_set_align(ui_Image2, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Image2, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
+    lv_obj_clear_flag(ui_Image2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_img_set_zoom(ui_Image2, 180);
+
     lv_obj_add_event_cb(ui_Button2, ui_event_Button2, LV_EVENT_ALL, NULL);
     uic_Image1 = ui_Image1;
     uic_Panel1 = ui_Panel1;
     uic_Panel2 = ui_Panel2;
-    uic_Image2 = ui_Image2;
     uic_Label1 = ui_Label1;
     uic_Panel3 = ui_Panel3;
     uic_Label2 = ui_Label2;
@@ -264,8 +260,6 @@ void ui_Screen1_screen_destroy(void)
     ui_Panel1 = NULL;
     uic_Panel2 = NULL;
     ui_Panel2 = NULL;
-    uic_Image2 = NULL;
-    ui_Image2 = NULL;
     uic_Label1 = NULL;
     ui_Label1 = NULL;
     uic_Panel3 = NULL;
@@ -288,6 +282,7 @@ void ui_Screen1_screen_destroy(void)
     ui_Label13 = NULL;
     uic_Label3 = NULL;
     ui_Label3 = NULL;
+    ui_Image2 = NULL;
 
 }
 
