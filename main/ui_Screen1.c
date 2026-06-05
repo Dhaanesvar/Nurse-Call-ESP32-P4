@@ -36,6 +36,131 @@ lv_obj_t * ui_Label3 = NULL;
 lv_obj_t * ui_Image2 = NULL;
 lv_obj_t * ui_Switch1 = NULL;
 lv_obj_t * ui_Label25 = NULL;
+lv_obj_t * ui_Button16 = NULL;
+lv_obj_t * ui_Label31 = NULL;
+static lv_obj_t * s_patient_popup_overlay = NULL;
+
+static void close_patient_popup(void)
+{
+    if(s_patient_popup_overlay != NULL) {
+        lv_obj_del(s_patient_popup_overlay);
+        s_patient_popup_overlay = NULL;
+    }
+}
+
+static void ui_event_ClosePatientPopup(lv_event_t * e)
+{
+    if(lv_event_get_code(e) == LV_EVENT_CLICKED) {
+        close_patient_popup();
+    }
+}
+
+static void open_patient_popup(void)
+{
+    lv_obj_t * popup;
+    lv_obj_t * title;
+    lv_obj_t * subtitle;
+    lv_obj_t * scroll;
+    lv_obj_t * details;
+    lv_obj_t * close_btn;
+    lv_obj_t * close_label;
+
+    if(ui_Screen1 == NULL) {
+        return;
+    }
+
+    if(s_patient_popup_overlay != NULL) {
+        lv_obj_move_foreground(s_patient_popup_overlay);
+        return;
+    }
+
+    s_patient_popup_overlay = lv_obj_create(ui_Screen1);
+    lv_obj_set_size(s_patient_popup_overlay, LV_PCT(100), LV_PCT(100));
+    lv_obj_set_align(s_patient_popup_overlay, LV_ALIGN_CENTER);
+    lv_obj_clear_flag(s_patient_popup_overlay, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_color(s_patient_popup_overlay, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(s_patient_popup_overlay, 150, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(s_patient_popup_overlay, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_add_event_cb(s_patient_popup_overlay, ui_event_ClosePatientPopup, LV_EVENT_CLICKED, NULL);
+
+    popup = lv_obj_create(s_patient_popup_overlay);
+    lv_obj_set_size(popup, 620, 430);
+    lv_obj_set_align(popup, LV_ALIGN_CENTER);
+    lv_obj_clear_flag(popup, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_radius(popup, 18, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(popup, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(popup, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(popup, lv_color_hex(0x1B1B1B), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(popup, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(popup, 14, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    title = lv_label_create(popup);
+    lv_obj_set_width(title, LV_PCT(100));
+    lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(title, &lv_font_montserrat_26, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(title, lv_color_hex(0x12324A), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_label_set_text(title, "PATIENT DETAILS");
+
+    subtitle = lv_label_create(popup);
+    lv_obj_set_width(subtitle, LV_PCT(100));
+    lv_obj_set_y(subtitle, 34);
+    lv_obj_set_style_text_align(subtitle, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(subtitle, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(subtitle, lv_color_hex(0x4F6478), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_label_set_text(subtitle, "Doctor Summary - Bed 160");
+
+    close_btn = lv_btn_create(popup);
+    lv_obj_set_size(close_btn, 90, 42);
+    lv_obj_set_align(close_btn, LV_ALIGN_TOP_RIGHT);
+    lv_obj_set_style_bg_color(close_btn, lv_color_hex(0xB22D2D), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(close_btn, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_add_event_cb(close_btn, ui_event_ClosePatientPopup, LV_EVENT_CLICKED, NULL);
+
+    close_label = lv_label_create(close_btn);
+    lv_label_set_text(close_label, "CLOSE");
+    lv_obj_set_style_text_font(close_label, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_center(close_label);
+
+    scroll = lv_obj_create(popup);
+    lv_obj_set_size(scroll, LV_PCT(100), 330);
+    lv_obj_set_y(scroll, 72);
+    lv_obj_set_scroll_dir(scroll, LV_DIR_VER);
+    lv_obj_set_style_radius(scroll, 12, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(scroll, lv_color_hex(0xF4F7FB), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(scroll, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(scroll, lv_color_hex(0xA8B5C3), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(scroll, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(scroll, 14, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    details = lv_label_create(scroll);
+    lv_obj_set_width(details, LV_PCT(100));
+    lv_label_set_long_mode(details, LV_LABEL_LONG_WRAP);
+    lv_obj_set_style_text_font(details, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(details, lv_color_hex(0x111111), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_line_space(details, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_label_set_text(details,
+        "Name: HAMZA ALI MAZARI\n"
+        "ID No.: 16253487\n"
+        "Age: 30\n"
+        "Gender: MALE\n"
+        "Doctor: DR. LISA\n"
+        "Height: 178 cm\n"
+        "Weight: 75 kg\n"
+        "Blood Group: O Positive\n"
+        "Surgery: Laparoscopic Appendectomy (Post-op Day 2)\n"
+        "Diagnosis: Post-op recovery, hemodynamically stable\n"
+        "Allergy: Penicillin\n"
+        "Medication: Ceftriaxone IV, Paracetamol, Ondansetron PRN\n"
+        "Comorbidities: Hypertension (controlled)\n"
+        "Lab Alerts: Hb 11.8 g/dL, WBC mildly elevated\n"
+        "Fall Risk: Moderate\n"
+        "Pressure Injury Risk: Low\n"
+        "Mobility: Ambulates with supervision\n"
+        "Isolation Status: None\n"
+        "Code Status: Full Code\n"
+        "Last Vitals: BP 122/78, HR 76, SpO2 98%, Temp 36.9 C\n"
+        "Nursing Notes: Continue wound and pain checks every 4 hours.");
+}
 // event funtions
 void ui_event_Button2(lv_event_t * e)
 {
@@ -55,6 +180,13 @@ void ui_event_Switch1(lv_event_t * e)
     }
 }
 
+void ui_event_Button16(lv_event_t * e)
+{
+    if(lv_event_get_code(e) == LV_EVENT_CLICKED) {
+        open_patient_popup();
+    }
+}
+
 // build funtions
 
 void ui_Screen1_screen_init(void)
@@ -64,7 +196,9 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_style_bg_color(ui_Screen1, lv_color_hex(0xB9B8B8), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_Screen1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_grad_color(ui_Screen1, lv_color_hex(0x645B5B), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_grad_dir(ui_Screen1, LV_GRAD_DIR_HOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_main_stop(ui_Screen1, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_grad_stop(ui_Screen1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_grad_dir(ui_Screen1, LV_GRAD_DIR_VER, LV_PART_MAIN | LV_STATE_DEFAULT);
     ui_apply_dark_mode();
 
     ui_Panel1 = lv_obj_create(ui_Screen1);
@@ -81,21 +215,21 @@ void ui_Screen1_screen_init(void)
     ui_Panel2 = lv_obj_create(ui_Screen1);
     lv_obj_set_width(ui_Panel2, 193);
     lv_obj_set_height(ui_Panel2, 229);
-    lv_obj_set_x(ui_Panel2, -210);
+    lv_obj_set_x(ui_Panel2, -190);
     lv_obj_set_y(ui_Panel2, -29);
     lv_obj_set_align(ui_Panel2, LV_ALIGN_CENTER);
     lv_obj_clear_flag(ui_Panel2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_bg_color(ui_Panel2, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(ui_Panel2, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_border_color(ui_Panel2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_border_opa(ui_Panel2, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_border_width(ui_Panel2, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_opa(ui_Panel2, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Panel2, 200, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_color(ui_Panel2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_opa(ui_Panel2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_width(ui_Panel2, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_spread(ui_Panel2, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Label1 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label1, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label1, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label1, -209);
+    lv_obj_set_x(ui_Label1, -190);
     lv_obj_set_y(ui_Label1, -112);
     lv_obj_set_align(ui_Label1, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label1, "BED NO. 160");
@@ -104,7 +238,7 @@ void ui_Screen1_screen_init(void)
     ui_Panel3 = lv_obj_create(ui_Screen1);
     lv_obj_set_width(ui_Panel3, 356);
     lv_obj_set_height(ui_Panel3, 232);
-    lv_obj_set_x(ui_Panel3, 99);
+    lv_obj_set_x(ui_Panel3, 121);
     lv_obj_set_y(ui_Panel3, -28);
     lv_obj_set_align(ui_Panel3, LV_ALIGN_CENTER);
     lv_obj_clear_flag(ui_Panel3, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
@@ -118,8 +252,8 @@ void ui_Screen1_screen_init(void)
     ui_Label2 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label2, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label2, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label2, -26);
-    lv_obj_set_y(ui_Label2, -29);
+    lv_obj_set_x(ui_Label2, -3);
+    lv_obj_set_y(ui_Label2, -28);
     lv_obj_set_align(ui_Label2, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label2, "Name\nID\nAge\nGender\nDoctor");
     lv_obj_set_style_text_font(ui_Label2, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -127,7 +261,7 @@ void ui_Screen1_screen_init(void)
     ui_Label4 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label4, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label4, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label4, 124);
+    lv_obj_set_x(ui_Label4, 148);
     lv_obj_set_y(ui_Label4, -28);
     lv_obj_set_align(ui_Label4, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label4, ": HAMZA ALI MAZARI\n: 16253487\n: 30\n: MALE\n: DR. LISA");
@@ -229,7 +363,7 @@ void ui_Screen1_screen_init(void)
     lv_img_set_src(ui_Image2, &ui_img_image_png);
     lv_obj_set_width(ui_Image2, LV_SIZE_CONTENT);   /// 225
     lv_obj_set_height(ui_Image2, LV_SIZE_CONTENT);    /// 225
-    lv_obj_set_x(ui_Image2, -210);
+    lv_obj_set_x(ui_Image2, -189);
     lv_obj_set_y(ui_Image2, -8);
     lv_obj_set_align(ui_Image2, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_Image2, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
@@ -256,8 +390,42 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_align(ui_Label25, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label25, "DARK");
 
+    ui_Button16 = lv_btn_create(ui_Screen1);
+    lv_obj_set_width(ui_Button16, 100);
+    lv_obj_set_height(ui_Button16, 269);
+    lv_obj_set_x(ui_Button16, -362);
+    lv_obj_set_y(ui_Button16, -167);
+    lv_obj_set_align(ui_Button16, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Button16, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_Button16, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_radius(ui_Button16, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_Button16, lv_color_hex(0x947C7C), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Button16, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_color(ui_Button16, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_opa(ui_Button16, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(ui_Button16, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_pad(ui_Button16, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_color(ui_Button16, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_opa(ui_Button16, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_width(ui_Button16, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_spread(ui_Button16, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Label31 = lv_label_create(ui_Screen1);
+    lv_obj_set_width(ui_Label31, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label31, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label31, 105);
+    lv_obj_set_y(ui_Label31, 105);
+    lv_obj_set_align(ui_Label31, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label31, "PATIENT'S INFO");
+    lv_obj_set_style_text_color(ui_Label31, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_Label31, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label31, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_transform_angle(ui_Label31, 2700, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_move_foreground(ui_Label31);
+
     lv_obj_add_event_cb(ui_Button2, ui_event_Button2, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Switch1, ui_event_Switch1, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Button16, ui_event_Button16, LV_EVENT_ALL, NULL);
     uic_Panel1 = ui_Panel1;
     uic_Panel2 = ui_Panel2;
     uic_Label1 = ui_Label1;
@@ -311,6 +479,9 @@ void ui_Screen1_screen_destroy(void)
     uic_Switch1 = NULL;
     ui_Switch1 = NULL;
     ui_Label25 = NULL;
+    ui_Button16 = NULL;
+    ui_Label31 = NULL;
+    s_patient_popup_overlay = NULL;
 
 }
 
