@@ -25,13 +25,13 @@
 #define MP3_HPF_ALPHA_DEN 1000
 #define MP3_LIMITER_THRESHOLD 28000
 #define MP3_RESAMPLE_MAX_RATIO 4
-#define MP3_WRITE_CHUNK_SAMPLES_PER_CH 256
+#define MP3_WRITE_CHUNK_SAMPLES_PER_CH 512
 #define MP3_PATH_MAX_LEN 160
 
 #define AUDIO_SAMPLE_RATE_HZ    MP3_OUTPUT_SAMPLE_RATE
 #define AUDIO_BITS_PER_SAMPLE   16
 #define AUDIO_CHANNELS          1
-#define AUDIO_VOLUME_PERCENT    60
+#define AUDIO_VOLUME_PERCENT    82
 #define AUDIO_CHUNK_SAMPLES     MP3_WRITE_CHUNK_SAMPLES_PER_CH
 
 static const char *TAG = "alert_audio";
@@ -134,6 +134,8 @@ static bool file_exists(const char *path)
 static const char *resolve_voice_path(const char *base_path, char *out_path, size_t out_len)
 {
     static const char *suffixes[] = {
+        "_male_deep_clear.wav",
+        "_male_deep.wav",
         "_male_clear.wav",
         "_male.wav",
         "_clear.wav",
@@ -251,13 +253,39 @@ static void enhance_pcm_voice(int16_t *samples, size_t sample_count, int channel
         s_hpf_prev_y[ch] = y;
 
         if(y > MP3_LIMITER_THRESHOLD) {
-            y = MP3_LIMITER_THRESHOLD;
+            int32_t excess = y - MP3_LIMITER_THRESHOLD;
+            y = MP3_LIMITER_THRESHOLD + (excess / 6);
         } else if(y < -MP3_LIMITER_THRESHOLD) {
-            y = -MP3_LIMITER_THRESHOLD;
+            int32_t excess = y + MP3_LIMITER_THRESHOLD;
+            y = -MP3_LIMITER_THRESHOLD + (excess / 6);
+        }
+
+        if(y > 32767) {
+            y = 32767;
+        } else if(y < -32768) {
+            y = -32768;
         }
 
         samples[i] = (int16_t)y;
     }
+}
+
+static size_t downmix_stereo_to_mono_inplace(int16_t *samples, size_t sample_count)
+{
+    size_t in_i;
+    size_t out_i = 0;
+
+    if(samples == NULL || sample_count < 2) {
+        return 0;
+    }
+
+    for(in_i = 0; in_i + 1 < sample_count; in_i += 2) {
+        int32_t l = samples[in_i];
+        int32_t r = samples[in_i + 1];
+        samples[out_i++] = (int16_t)((l + r) / 2);
+    }
+
+    return out_i;
 }
 
 static bool open_audio_path(int sample_rate_hz, int channels)
@@ -346,6 +374,7 @@ static bool play_wav_file(const char *path)
     int sample_rate_hz = AUDIO_SAMPLE_RATE_HZ;
     int channels = AUDIO_CHANNELS;
     int bits_per_sample = AUDIO_BITS_PER_SAMPLE;
+    int output_channels;
     const char *effective_path;
 
     if(!s_spiffs_ready || path == NULL) {
@@ -377,7 +406,10 @@ static bool play_wav_file(const char *path)
         return false;
     }
 
-    if(!open_audio_path(sample_rate_hz, channels)) {
+    // Force mono output for stable, clear speech on single-speaker setups.
+    output_channels = 1;
+
+    if(!open_audio_path(sample_rate_hz, output_channels)) {
         fclose(f);
         return false;
     }
@@ -390,9 +422,15 @@ static bool play_wav_file(const char *path)
             break;
         }
 
+        if(channels == 2) {
+            size_t pcm_bytes = n & ~(sizeof(int16_t) - 1U);
+            size_t mono_samples = downmix_stereo_to_mono_inplace((int16_t *)buf, pcm_bytes / sizeof(int16_t));
+            n = mono_samples * sizeof(int16_t);
+        }
+
         if(MP3_ENABLE_DSP_ENHANCER && (n >= sizeof(int16_t))) {
             size_t pcm_bytes = n & ~(sizeof(int16_t) - 1U);
-            enhance_pcm_voice((int16_t *)buf, pcm_bytes / sizeof(int16_t), channels);
+            enhance_pcm_voice((int16_t *)buf, pcm_bytes / sizeof(int16_t), output_channels);
             n = pcm_bytes;
         }
 
