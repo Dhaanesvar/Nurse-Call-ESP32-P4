@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "alert_audio.h"
 #include "bsp/esp-bsp.h"
 #include "ui.h"
 
@@ -8,7 +9,7 @@ void app_main(void)
 	bsp_display_cfg_t cfg = {
 		.lvgl_port_cfg = ESP_LVGL_PORT_INIT_CONFIG(),
 		.buffer_size = BSP_LCD_H_RES * 20,
-		.double_buffer = false,
+		.double_buffer = true,
 		.flags = {
 			.buff_dma = true,
 			.buff_spiram = false,
@@ -23,6 +24,7 @@ void app_main(void)
 
 	bsp_display_backlight_on();
 	bsp_display_lock(0);
+	nurse_audio_init();
 	ui_init();
 	bsp_display_unlock();
 }

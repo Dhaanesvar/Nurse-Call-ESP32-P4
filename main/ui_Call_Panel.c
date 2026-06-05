@@ -4,6 +4,7 @@
 // Project name: SquareLine_Project
 
 #include "ui.h"
+#include "alert_audio.h"
 
 lv_obj_t * uic_Label17;
 lv_obj_t * uic_Button8;
@@ -23,7 +24,8 @@ void ui_event_Button8(lv_event_t * e)
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_PRESSED) {
-        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_Screen1_screen_init);
+        nurse_audio_stop();
+        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Screen1_screen_init);
     }
 }
 
