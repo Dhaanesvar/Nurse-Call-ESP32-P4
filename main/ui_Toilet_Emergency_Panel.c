@@ -16,14 +16,26 @@ lv_obj_t * ui_Panel9 = NULL;
 lv_obj_t * ui_Label23 = NULL;
 lv_obj_t * ui_Button12 = NULL;
 lv_obj_t * ui_Label24 = NULL;
+lv_obj_t * ui_Button15 = NULL;
+lv_obj_t * ui_Label30 = NULL;
 // event funtions
-void ui_event_Button12(lv_event_t * e)
+void ui_event_Button15(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_PRESSED) {
         nurse_audio_stop();
-        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Screen1_screen_init);
+        ui_clear_notification();
+        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 100, 0, &ui_Screen1_screen_init);
+    }
+}
+
+void ui_event_Button12(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_PRESSED) {
+        on_in_progress_click(e);
     }
 }
 
@@ -35,6 +47,7 @@ void ui_Toilet_Emergency_Panel_screen_init(void)
     lv_obj_clear_flag(ui_Toilet_Emergency_Panel, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_bg_color(ui_Toilet_Emergency_Panel, lv_color_hex(0xFF9600), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_Toilet_Emergency_Panel, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    ui_apply_dark_mode();
 
     ui_Panel9 = lv_obj_create(ui_Toilet_Emergency_Panel);
     lv_obj_set_width(ui_Panel9, 632);
@@ -58,8 +71,8 @@ void ui_Toilet_Emergency_Panel_screen_init(void)
     ui_Button12 = lv_btn_create(ui_Toilet_Emergency_Panel);
     lv_obj_set_width(ui_Button12, 167);
     lv_obj_set_height(ui_Button12, 50);
-    lv_obj_set_x(ui_Button12, 13);
-    lv_obj_set_y(ui_Button12, 197);
+    lv_obj_set_x(ui_Button12, -127);
+    lv_obj_set_y(ui_Button12, 162);
     lv_obj_set_align(ui_Button12, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_Button12, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_Button12, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
@@ -67,12 +80,30 @@ void ui_Toilet_Emergency_Panel_screen_init(void)
     ui_Label24 = lv_label_create(ui_Toilet_Emergency_Panel);
     lv_obj_set_width(ui_Label24, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label24, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label24, 13);
-    lv_obj_set_y(ui_Label24, 199);
+    lv_obj_set_x(ui_Label24, -128);
+    lv_obj_set_y(ui_Label24, 162);
     lv_obj_set_align(ui_Label24, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Label24, "Cancel Call");
+    lv_label_set_text(ui_Label24, "In Progress");
+
+    ui_Button15 = lv_btn_create(ui_Toilet_Emergency_Panel);
+    lv_obj_set_width(ui_Button15, 167);
+    lv_obj_set_height(ui_Button15, 50);
+    lv_obj_set_x(ui_Button15, 159);
+    lv_obj_set_y(ui_Button15, 161);
+    lv_obj_set_align(ui_Button15, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Button15, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_Button15, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_Label30 = lv_label_create(ui_Toilet_Emergency_Panel);
+    lv_obj_set_width(ui_Label30, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label30, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label30, 159);
+    lv_obj_set_y(ui_Label30, 162);
+    lv_obj_set_align(ui_Label30, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label30, "Resolved");
 
     lv_obj_add_event_cb(ui_Button12, ui_event_Button12, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Button15, ui_event_Button15, LV_EVENT_ALL, NULL);
     uic_Toilet_Emergency_Panel = ui_Toilet_Emergency_Panel;
     uic_Panel9 = ui_Panel9;
     uic_Label23 = ui_Label23;
@@ -96,6 +127,8 @@ void ui_Toilet_Emergency_Panel_screen_destroy(void)
     ui_Button12 = NULL;
     uic_Label24 = NULL;
     ui_Label24 = NULL;
+    ui_Button15 = NULL;
+    ui_Label30 = NULL;
 
 }
 

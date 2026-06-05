@@ -5,7 +5,6 @@
 
 #include "ui.h"
 #include "alert_audio.h"
-#include "lan_tcp_sender.h"
 
 lv_obj_t * uic_Label18;
 lv_obj_t * uic_Button9;
@@ -19,9 +18,7 @@ lv_obj_t * uic_Button6;
 lv_obj_t * uic_Button5;
 lv_obj_t * uic_Button3;
 lv_obj_t * uic_Button4;
-lv_obj_t * uic_Image3;
 lv_obj_t * ui_Screen2 = NULL;
-lv_obj_t * ui_Image3 = NULL;
 lv_obj_t * ui_Button4 = NULL;
 lv_obj_t * ui_Button3 = NULL;
 lv_obj_t * ui_Button5 = NULL;
@@ -34,15 +31,15 @@ lv_obj_t * ui_Label11 = NULL;
 lv_obj_t * ui_Label12 = NULL;
 lv_obj_t * ui_Button9 = NULL;
 lv_obj_t * ui_Label18 = NULL;
+lv_obj_t * ui_Label26 = NULL;
 // event funtions
 void ui_event_Button4(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_PRESSED) {
-        lan_tcp_send_event_json("emergency_call");
         nurse_audio_start(NURSE_ALERT_EMERGENCY);
-        _ui_screen_change(&ui_Emergency_Panel, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Emergency_Panel_screen_init);
+        _ui_screen_change(&ui_Emergency_Panel, LV_SCR_LOAD_ANIM_FADE_ON, 1, 0, &ui_Emergency_Panel_screen_init);
     }
 }
 
@@ -51,9 +48,8 @@ void ui_event_Button3(lv_event_t * e)
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_CLICKED) {
-        lan_tcp_send_event_json("call_assistance");
         nurse_audio_start(NURSE_ALERT_CALL);
-        _ui_screen_change(&ui_Call_Panel, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Call_Panel_screen_init);
+        _ui_screen_change(&ui_Call_Panel, LV_SCR_LOAD_ANIM_FADE_ON, 10, 0, &ui_Call_Panel_screen_init);
     }
 }
 
@@ -62,9 +58,8 @@ void ui_event_Button5(lv_event_t * e)
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_PRESSED) {
-        lan_tcp_send_event_json("code_blue");
         nurse_audio_start(NURSE_ALERT_CODE_BLUE);
-        _ui_screen_change(&ui_Code_Blue_Panel, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Code_Blue_Panel_screen_init);
+        _ui_screen_change(&ui_Code_Blue_Panel, LV_SCR_LOAD_ANIM_FADE_ON, 1, 0, &ui_Code_Blue_Panel_screen_init);
     }
 }
 
@@ -73,9 +68,8 @@ void ui_event_Button6(lv_event_t * e)
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_PRESSED) {
-        lan_tcp_send_event_json("toilet_emergency");
         nurse_audio_start(NURSE_ALERT_TOILET_EMERGENCY);
-        _ui_screen_change(&ui_Toilet_Emergency_Panel, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Toilet_Emergency_Panel_screen_init);
+        _ui_screen_change(&ui_Toilet_Emergency_Panel, LV_SCR_LOAD_ANIM_FADE_ON, 1, 0, &ui_Toilet_Emergency_Panel_screen_init);
     }
 }
 
@@ -84,9 +78,7 @@ void ui_event_Button7(lv_event_t * e)
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_PRESSED) {
-        lan_tcp_send_event_json("cancel_call");
-        nurse_audio_stop();
-        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Screen1_screen_init);
+        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_Screen1_screen_init);
     }
 }
 
@@ -95,9 +87,7 @@ void ui_event_Button9(lv_event_t * e)
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_PRESSED) {
-        lan_tcp_send_event_json("back");
-        nurse_audio_stop();
-        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Screen1_screen_init);
+        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 10, 0, &ui_Screen1_screen_init);
     }
 }
 
@@ -107,15 +97,11 @@ void ui_Screen2_screen_init(void)
 {
     ui_Screen2 = lv_obj_create(NULL);
     lv_obj_clear_flag(ui_Screen2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-
-    ui_Image3 = lv_img_create(ui_Screen2);
-    lv_img_set_src(ui_Image3, &ui_img_hospital_bg_png_png);
-    lv_obj_set_width(ui_Image3, LV_SIZE_CONTENT);   /// 1200
-    lv_obj_set_height(ui_Image3, LV_SIZE_CONTENT);    /// 1200
-    lv_obj_set_align(ui_Image3, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_Image3, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
-    lv_obj_clear_flag(ui_Image3, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_img_set_zoom(ui_Image3, 200);
+    lv_obj_set_style_bg_color(ui_Screen2, lv_color_hex(0xB1ABAB), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Screen2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_grad_color(ui_Screen2, lv_color_hex(0xD12795), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_grad_dir(ui_Screen2, LV_GRAD_DIR_HOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    ui_apply_dark_mode();
 
     ui_Button4 = lv_btn_create(ui_Screen2);
     lv_obj_set_width(ui_Button4, 289);
@@ -275,13 +261,25 @@ void ui_Screen2_screen_init(void)
     lv_label_set_text(ui_Label18, "Back");
     lv_obj_set_style_text_font(ui_Label18, &lv_font_montserrat_28, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    ui_Label26 = lv_label_create(ui_Screen2);
+    lv_obj_set_width(ui_Label26, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label26, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label26, 5);
+    lv_obj_set_y(ui_Label26, -284);
+    lv_obj_set_align(ui_Label26, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label26, "NURSE CALL ASSISTANCE");
+    lv_obj_set_style_text_color(ui_Label26, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_Label26, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_align(ui_Label26, LV_TEXT_ALIGN_AUTO, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_decor(ui_Label26, LV_TEXT_DECOR_UNDERLINE, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label26, &lv_font_montserrat_32, LV_PART_MAIN | LV_STATE_DEFAULT);
+
     lv_obj_add_event_cb(ui_Button4, ui_event_Button4, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Button3, ui_event_Button3, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Button5, ui_event_Button5, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Button6, ui_event_Button6, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Button7, ui_event_Button7, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Button9, ui_event_Button9, LV_EVENT_ALL, NULL);
-    uic_Image3 = ui_Image3;
     uic_Button4 = ui_Button4;
     uic_Button3 = ui_Button3;
     uic_Button5 = ui_Button5;
@@ -303,8 +301,6 @@ void ui_Screen2_screen_destroy(void)
 
     // NULL screen variables
     ui_Screen2 = NULL;
-    uic_Image3 = NULL;
-    ui_Image3 = NULL;
     uic_Button4 = NULL;
     ui_Button4 = NULL;
     uic_Button3 = NULL;
@@ -329,6 +325,7 @@ void ui_Screen2_screen_destroy(void)
     ui_Button9 = NULL;
     uic_Label18 = NULL;
     ui_Label18 = NULL;
+    ui_Label26 = NULL;
 
 }
 

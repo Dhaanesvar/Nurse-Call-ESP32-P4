@@ -42,6 +42,7 @@ extern lv_obj_t * ui____initial_actions0;
 
 // IMAGES AND IMAGE SETS
 LV_IMG_DECLARE(ui_img_hospital_bg_png_png);    // assets/hospital bg.png.png
+LV_IMG_DECLARE(ui_img_1755073793);    // assets/1755073793
 LV_IMG_DECLARE(ui_img_image_png);    // assets/image.png
 
 // UI INIT

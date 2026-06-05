@@ -5,6 +5,7 @@
 
 #include "ui.h"
 
+lv_obj_t * uic_Switch1;
 lv_obj_t * uic_Label3;
 lv_obj_t * uic_Label13;
 lv_obj_t * uic_Button2;
@@ -18,9 +19,7 @@ lv_obj_t * uic_Panel3;
 lv_obj_t * uic_Label1;
 lv_obj_t * uic_Panel2;
 lv_obj_t * uic_Panel1;
-lv_obj_t * uic_Image1;
 lv_obj_t * ui_Screen1 = NULL;
-lv_obj_t * ui_Image1 = NULL;
 lv_obj_t * ui_Panel1 = NULL;
 lv_obj_t * ui_Panel2 = NULL;
 lv_obj_t * ui_Label1 = NULL;
@@ -35,6 +34,8 @@ lv_obj_t * ui_Button2 = NULL;
 lv_obj_t * ui_Label13 = NULL;
 lv_obj_t * ui_Label3 = NULL;
 lv_obj_t * ui_Image2 = NULL;
+lv_obj_t * ui_Switch1 = NULL;
+lv_obj_t * ui_Label25 = NULL;
 // event funtions
 void ui_event_Button2(lv_event_t * e)
 {
@@ -45,21 +46,26 @@ void ui_event_Button2(lv_event_t * e)
     }
 }
 
+void ui_event_Switch1(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_VALUE_CHANGED) {
+        GOES_DARK(e);
+    }
+}
+
 // build funtions
 
 void ui_Screen1_screen_init(void)
 {
     ui_Screen1 = lv_obj_create(NULL);
     lv_obj_clear_flag(ui_Screen1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-
-    ui_Image1 = lv_img_create(ui_Screen1);
-    lv_img_set_src(ui_Image1, &ui_img_hospital_bg_png_png);
-    lv_obj_set_width(ui_Image1, LV_SIZE_CONTENT);   /// 1200
-    lv_obj_set_height(ui_Image1, LV_SIZE_CONTENT);    /// 1200
-    lv_obj_set_align(ui_Image1, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_Image1, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
-    lv_obj_clear_flag(ui_Image1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_img_set_zoom(ui_Image1, 200);
+    lv_obj_set_style_bg_color(ui_Screen1, lv_color_hex(0xB9B8B8), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Screen1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_grad_color(ui_Screen1, lv_color_hex(0x645B5B), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_grad_dir(ui_Screen1, LV_GRAD_DIR_HOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+    ui_apply_dark_mode();
 
     ui_Panel1 = lv_obj_create(ui_Screen1);
     lv_obj_set_width(ui_Panel1, 675);
@@ -80,11 +86,11 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_align(ui_Panel2, LV_ALIGN_CENTER);
     lv_obj_clear_flag(ui_Panel2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_bg_color(ui_Panel2, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(ui_Panel2, 200, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_color(ui_Panel2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_opa(ui_Panel2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_width(ui_Panel2, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_spread(ui_Panel2, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Panel2, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_Panel2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(ui_Panel2, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_Panel2, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_opa(ui_Panel2, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Label1 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label1, LV_SIZE_CONTENT);   /// 1
@@ -228,10 +234,30 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_align(ui_Image2, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_Image2, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
     lv_obj_clear_flag(ui_Image2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_img_opa(ui_Image2, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_img_set_antialias(ui_Image2, false);
     lv_img_set_zoom(ui_Image2, 180);
 
+    ui_Switch1 = lv_switch_create(ui_Screen1);
+    lv_obj_set_width(ui_Switch1, 119);
+    lv_obj_set_height(ui_Switch1, 44);
+    lv_obj_set_x(ui_Switch1, 296);
+    lv_obj_set_y(ui_Switch1, -331);
+    lv_obj_set_align(ui_Switch1, LV_ALIGN_CENTER);
+    if(ui_is_dark_mode_enabled()) {
+        lv_obj_add_state(ui_Switch1, LV_STATE_CHECKED);
+    }
+
+    ui_Label25 = lv_label_create(ui_Screen1);
+    lv_obj_set_width(ui_Label25, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label25, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label25, 310);
+    lv_obj_set_y(ui_Label25, -331);
+    lv_obj_set_align(ui_Label25, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label25, "DARK");
+
     lv_obj_add_event_cb(ui_Button2, ui_event_Button2, LV_EVENT_ALL, NULL);
-    uic_Image1 = ui_Image1;
+    lv_obj_add_event_cb(ui_Switch1, ui_event_Switch1, LV_EVENT_ALL, NULL);
     uic_Panel1 = ui_Panel1;
     uic_Panel2 = ui_Panel2;
     uic_Label1 = ui_Label1;
@@ -245,6 +271,7 @@ void ui_Screen1_screen_init(void)
     uic_Button2 = ui_Button2;
     uic_Label13 = ui_Label13;
     uic_Label3 = ui_Label3;
+    uic_Switch1 = ui_Switch1;
 
 }
 
@@ -254,8 +281,6 @@ void ui_Screen1_screen_destroy(void)
 
     // NULL screen variables
     ui_Screen1 = NULL;
-    uic_Image1 = NULL;
-    ui_Image1 = NULL;
     uic_Panel1 = NULL;
     ui_Panel1 = NULL;
     uic_Panel2 = NULL;
@@ -283,6 +308,9 @@ void ui_Screen1_screen_destroy(void)
     uic_Label3 = NULL;
     ui_Label3 = NULL;
     ui_Image2 = NULL;
+    uic_Switch1 = NULL;
+    ui_Switch1 = NULL;
+    ui_Label25 = NULL;
 
 }
 

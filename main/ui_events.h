@@ -10,6 +10,14 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
+
+void GOES_DARK(lv_event_t * e);
+void on_in_progress_click(lv_event_t * e);
+void ui_apply_dark_mode(void);
+bool ui_is_dark_mode_enabled(void);
+void ui_clear_notification(void);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

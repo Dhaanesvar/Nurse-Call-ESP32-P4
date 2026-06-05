@@ -16,6 +16,8 @@ lv_obj_t * ui_Panel6 = NULL;
 lv_obj_t * ui_Label14 = NULL;
 lv_obj_t * ui_Button11 = NULL;
 lv_obj_t * ui_Label22 = NULL;
+lv_obj_t * ui_Button1 = NULL;
+lv_obj_t * ui_Label27 = NULL;
 // event funtions
 void ui_event_Emergency_Panel(lv_event_t * e)
 {
@@ -35,13 +37,23 @@ void ui_event_Label14(lv_event_t * e)
     }
 }
 
-void ui_event_Button11(lv_event_t * e)
+void ui_event_Button1(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_PRESSED) {
         nurse_audio_stop();
-        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_NONE, 0, 0, &ui_Screen1_screen_init);
+        ui_clear_notification();
+        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 100, 0, &ui_Screen1_screen_init);
+    }
+}
+
+void ui_event_Button11(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_PRESSED) {
+        on_in_progress_click(e);
     }
 }
 
@@ -53,6 +65,7 @@ void ui_Emergency_Panel_screen_init(void)
     lv_obj_clear_flag(ui_Emergency_Panel, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_bg_color(ui_Emergency_Panel, lv_color_hex(0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_Emergency_Panel, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    ui_apply_dark_mode();
 
     ui_Panel6 = lv_obj_create(ui_Emergency_Panel);
     lv_obj_set_width(ui_Panel6, 575);
@@ -74,8 +87,8 @@ void ui_Emergency_Panel_screen_init(void)
     ui_Button11 = lv_btn_create(ui_Emergency_Panel);
     lv_obj_set_width(ui_Button11, 167);
     lv_obj_set_height(ui_Button11, 50);
-    lv_obj_set_x(ui_Button11, 13);
-    lv_obj_set_y(ui_Button11, 197);
+    lv_obj_set_x(ui_Button11, -135);
+    lv_obj_set_y(ui_Button11, 172);
     lv_obj_set_align(ui_Button11, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_Button11, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_Button11, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
@@ -83,13 +96,31 @@ void ui_Emergency_Panel_screen_init(void)
     ui_Label22 = lv_label_create(ui_Emergency_Panel);
     lv_obj_set_width(ui_Label22, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label22, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label22, 13);
-    lv_obj_set_y(ui_Label22, 199);
+    lv_obj_set_x(ui_Label22, -138);
+    lv_obj_set_y(ui_Label22, 172);
     lv_obj_set_align(ui_Label22, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Label22, "Cancel Call");
+    lv_label_set_text(ui_Label22, "In Progress");
+
+    ui_Button1 = lv_btn_create(ui_Emergency_Panel);
+    lv_obj_set_width(ui_Button1, 167);
+    lv_obj_set_height(ui_Button1, 50);
+    lv_obj_set_x(ui_Button1, 135);
+    lv_obj_set_y(ui_Button1, 171);
+    lv_obj_set_align(ui_Button1, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Button1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_Button1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_Label27 = lv_label_create(ui_Emergency_Panel);
+    lv_obj_set_width(ui_Label27, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label27, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label27, 135);
+    lv_obj_set_y(ui_Label27, 171);
+    lv_obj_set_align(ui_Label27, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label27, "Resolved");
 
     lv_obj_add_event_cb(ui_Label14, ui_event_Label14, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Button11, ui_event_Button11, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Button1, ui_event_Button1, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Emergency_Panel, ui_event_Emergency_Panel, LV_EVENT_ALL, NULL);
     uic_Emergency_Panel = ui_Emergency_Panel;
     uic_Panel6 = ui_Panel6;
@@ -114,6 +145,8 @@ void ui_Emergency_Panel_screen_destroy(void)
     ui_Button11 = NULL;
     uic_Label22 = NULL;
     ui_Label22 = NULL;
+    ui_Button1 = NULL;
+    ui_Label27 = NULL;
 
 }
 
