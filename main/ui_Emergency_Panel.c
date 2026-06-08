@@ -109,6 +109,7 @@ void ui_Emergency_Panel_screen_init(void)
     lv_obj_set_align(ui_Label27, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label27, "Resolved");
 
+    lv_obj_add_event_cb(ui_Button11, on_in_progress_click, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Label14, ui_event_Label14, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Button1, ui_event_Button1, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Emergency_Panel, ui_event_Emergency_Panel, LV_EVENT_ALL, NULL);
