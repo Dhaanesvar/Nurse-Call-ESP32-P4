@@ -104,6 +104,7 @@ void ui_Code_Blue_Panel_screen_init(void)
     lv_obj_set_align(ui_Label29, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label29, "Resolved");
 
+    lv_obj_add_event_cb(ui_Button10, on_in_progress_click, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Button14, ui_event_Button14, LV_EVENT_ALL, NULL);
     uic_Code_Blue_Panel = ui_Code_Blue_Panel;
     uic_Panel8 = ui_Panel8;

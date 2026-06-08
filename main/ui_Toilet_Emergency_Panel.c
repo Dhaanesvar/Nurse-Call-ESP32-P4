@@ -93,6 +93,7 @@ void ui_Toilet_Emergency_Panel_screen_init(void)
     lv_obj_set_align(ui_Label30, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label30, "Resolved");
 
+    lv_obj_add_event_cb(ui_Button12, on_in_progress_click, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Button15, ui_event_Button15, LV_EVENT_ALL, NULL);
     uic_Toilet_Emergency_Panel = ui_Toilet_Emergency_Panel;
     uic_Panel9 = ui_Panel9;
