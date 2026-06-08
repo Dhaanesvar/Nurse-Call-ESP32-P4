@@ -28,7 +28,6 @@ extern lv_obj_t * ui_Label7;
 extern void ui_event_Button2(lv_event_t * e);
 extern lv_obj_t * ui_Button2;
 extern lv_obj_t * ui_Label13;
-extern lv_obj_t * ui_Label3;
 extern lv_obj_t * ui_Image2;
 extern void ui_event_Switch1(lv_event_t * e);
 extern lv_obj_t * ui_Switch1;
@@ -36,6 +35,11 @@ extern lv_obj_t * ui_Label25;
 extern void ui_event_Button16(lv_event_t * e);
 extern lv_obj_t * ui_Button16;
 extern lv_obj_t * ui_Label31;
+extern lv_obj_t * ui_Label32;
+extern lv_obj_t * ui_Panel4;
+extern lv_obj_t * ui_Panel10;
+extern lv_obj_t * ui_Label3;
+extern lv_obj_t * ui_Label33;
 // CUSTOM VARIABLES
 extern lv_obj_t * uic_Panel1;
 extern lv_obj_t * uic_Panel2;
@@ -49,7 +53,6 @@ extern lv_obj_t * uic_Label5;
 extern lv_obj_t * uic_Label7;
 extern lv_obj_t * uic_Button2;
 extern lv_obj_t * uic_Label13;
-extern lv_obj_t * uic_Label3;
 extern lv_obj_t * uic_Switch1;
 
 #ifdef __cplusplus

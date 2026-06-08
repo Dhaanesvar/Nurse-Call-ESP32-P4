@@ -26,16 +26,7 @@ void ui_event_Button15(lv_event_t * e)
     if(event_code == LV_EVENT_PRESSED) {
         nurse_audio_stop();
         ui_clear_notification();
-        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 100, 0, &ui_Screen1_screen_init);
-    }
-}
-
-void ui_event_Button12(lv_event_t * e)
-{
-    lv_event_code_t event_code = lv_event_get_code(e);
-
-    if(event_code == LV_EVENT_PRESSED) {
-        on_in_progress_click(e);
+        _ui_screen_change(&ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_Screen1_screen_init);
     }
 }
 
@@ -102,7 +93,6 @@ void ui_Toilet_Emergency_Panel_screen_init(void)
     lv_obj_set_align(ui_Label30, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label30, "Resolved");
 
-    lv_obj_add_event_cb(ui_Button12, ui_event_Button12, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Button15, ui_event_Button15, LV_EVENT_ALL, NULL);
     uic_Toilet_Emergency_Panel = ui_Toilet_Emergency_Panel;
     uic_Panel9 = ui_Panel9;
