@@ -82,6 +82,44 @@ static void ui_event_patient_popup_cancel(lv_event_t * e)
     }
 }
 
+static void ui_popup_add_section_title(lv_obj_t * parent, const char * title_text)
+{
+    lv_obj_t * title = lv_label_create(parent);
+    lv_obj_set_width(title, 620);
+    lv_label_set_long_mode(title, LV_LABEL_LONG_WRAP);
+    lv_label_set_text(title, title_text);
+    lv_obj_set_style_text_color(title, lv_color_hex(0x0F766E), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(title, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+}
+
+static void ui_popup_add_kv_row(lv_obj_t * parent, const char * key_text, const char * value_text)
+{
+    lv_obj_t * row = lv_obj_create(parent);
+    lv_obj_set_width(row, 620);
+    lv_obj_set_height(row, LV_SIZE_CONTENT);
+    lv_obj_clear_flag(row, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_opa(row, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(row, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(row, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_column(row, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+
+    lv_obj_t * key = lv_label_create(row);
+    lv_obj_set_width(key, 210);
+    lv_label_set_long_mode(key, LV_LABEL_LONG_WRAP);
+    lv_label_set_text(key, key_text);
+    lv_obj_set_style_text_color(key, lv_color_hex(0x334155), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(key, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t * value = lv_label_create(row);
+    lv_obj_set_width(value, 400);
+    lv_label_set_long_mode(value, LV_LABEL_LONG_WRAP);
+    lv_label_set_text(value, value_text);
+    lv_obj_set_style_text_color(value, lv_color_hex(0x0F172A), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(value, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+}
+
 static void ui_show_patient_info_popup(void)
 {
     lv_obj_t * scr = lv_scr_act();
@@ -137,37 +175,38 @@ static void ui_show_patient_info_popup(void)
     lv_obj_set_style_border_width(s_patient_scroll, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_all(s_patient_scroll, 14, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_row(s_patient_scroll, 8, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_flex_flow(s_patient_scroll, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(s_patient_scroll, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
 
-    lv_obj_t * details = lv_label_create(s_patient_scroll);
-    lv_obj_set_width(details, 620);
-    lv_label_set_long_mode(details, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(details,
-                      "Patient Details\n"
-                      "- Name: Hamza Ali Mazari\n"
-                      "- Patient ID: 16253487\n"
-                      "- Age / Gender: 30 / Male\n"
-                      "- Attending Doctor: Dr. Lisa\n\n"
-                      "Surgery\n"
-                      "- Procedure: Laparoscopic appendectomy\n"
-                      "- Date: 2026-05-29\n"
-                      "- Status: Recovery phase\n\n"
-                      "Primary Sickness\n"
-                      "- Diagnosis: Acute appendicitis with localized infection\n"
-                      "- Current symptoms: Mild abdominal pain, low appetite\n\n"
-                      "Medication\n"
-                      "- IV Ceftriaxone 1 g every 12 hours\n"
-                      "- Paracetamol 650 mg every 8 hours\n"
-                      "- Ondansetron 4 mg PRN for nausea\n\n"
-                      "Eating Diet\n"
-                      "- Soft diet, low spice\n"
-                      "- Hydration target: 2.0 L per day\n"
-                      "- Avoid oily and high-fiber foods for 5 days\n\n"
-                      "Discharge Plan\n"
-                      "- Planned discharge: 2026-06-12 (if stable)\n"
-                      "- Follow-up review: 7 days after discharge\n"
-                      "- Home advice: Daily wound check, no heavy lifting for 2 weeks");
-    lv_obj_set_style_text_color(details, lv_color_hex(0x0F172A), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(details, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    ui_popup_add_section_title(s_patient_scroll, "Patient Details");
+    ui_popup_add_kv_row(s_patient_scroll, "Name", "Hamza Ali Mazari");
+    ui_popup_add_kv_row(s_patient_scroll, "Patient ID", "16253487");
+    ui_popup_add_kv_row(s_patient_scroll, "Age / Gender", "30 / Male");
+    ui_popup_add_kv_row(s_patient_scroll, "Attending Doctor", "Dr. Lisa");
+
+    ui_popup_add_section_title(s_patient_scroll, "Surgery");
+    ui_popup_add_kv_row(s_patient_scroll, "Procedure", "Laparoscopic appendectomy");
+    ui_popup_add_kv_row(s_patient_scroll, "Date", "2026-05-29");
+    ui_popup_add_kv_row(s_patient_scroll, "Status", "Recovery phase");
+
+    ui_popup_add_section_title(s_patient_scroll, "Primary Sickness");
+    ui_popup_add_kv_row(s_patient_scroll, "Diagnosis", "Acute appendicitis with localized infection");
+    ui_popup_add_kv_row(s_patient_scroll, "Current Symptoms", "Mild abdominal pain, low appetite");
+
+    ui_popup_add_section_title(s_patient_scroll, "Medication");
+    ui_popup_add_kv_row(s_patient_scroll, "Ceftriaxone", "IV 1 g every 12 hours");
+    ui_popup_add_kv_row(s_patient_scroll, "Paracetamol", "650 mg every 8 hours");
+    ui_popup_add_kv_row(s_patient_scroll, "Ondansetron", "4 mg PRN for nausea");
+
+    ui_popup_add_section_title(s_patient_scroll, "Eating Diet");
+    ui_popup_add_kv_row(s_patient_scroll, "Diet Plan", "Soft diet, low spice");
+    ui_popup_add_kv_row(s_patient_scroll, "Hydration", "2.0 L per day target");
+    ui_popup_add_kv_row(s_patient_scroll, "Restrictions", "Avoid oily/high-fiber foods for 5 days");
+
+    ui_popup_add_section_title(s_patient_scroll, "Discharge Plan");
+    ui_popup_add_kv_row(s_patient_scroll, "Planned Discharge", "2026-06-12 (if stable)");
+    ui_popup_add_kv_row(s_patient_scroll, "Follow-up", "7 days after discharge");
+    ui_popup_add_kv_row(s_patient_scroll, "Home Advice", "Daily wound check; no heavy lifting for 2 weeks");
 
     lv_obj_t * cancel_btn = lv_btn_create(s_patient_modal);
     lv_obj_set_size(cancel_btn, 170, 48);
