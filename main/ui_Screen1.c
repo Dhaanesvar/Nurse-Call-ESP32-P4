@@ -5,10 +5,218 @@
 
 #include "ui.h"
 
+static lv_obj_t * s_patient_overlay = NULL;
+static lv_obj_t * s_patient_modal = NULL;
+static lv_obj_t * s_patient_scroll = NULL;
+
+static void ui_anim_set_bg_opa(void * obj, int32_t v)
+{
+    lv_obj_set_style_bg_opa((lv_obj_t *)obj, (lv_opa_t)v, LV_PART_MAIN | LV_STATE_DEFAULT);
+}
+
+static void ui_anim_set_modal_opa(void * obj, int32_t v)
+{
+    lv_obj_set_style_opa((lv_obj_t *)obj, (lv_opa_t)v, LV_PART_MAIN | LV_STATE_DEFAULT);
+}
+
+static void ui_anim_set_translate_y(void * obj, int32_t v)
+{
+    lv_obj_set_style_translate_y((lv_obj_t *)obj, v, LV_PART_MAIN | LV_STATE_DEFAULT);
+}
+
+static void ui_patient_popup_cleanup(void)
+{
+    if(s_patient_overlay != NULL && lv_obj_is_valid(s_patient_overlay)) {
+        lv_obj_del(s_patient_overlay);
+    }
+    s_patient_overlay = NULL;
+    s_patient_modal = NULL;
+    s_patient_scroll = NULL;
+}
+
+static void ui_patient_popup_close_anim_done(lv_anim_t * a)
+{
+    LV_UNUSED(a);
+    ui_patient_popup_cleanup();
+}
+
+static void ui_hide_patient_info_popup(void)
+{
+    if(s_patient_overlay == NULL || !lv_obj_is_valid(s_patient_overlay) ||
+       s_patient_modal == NULL || !lv_obj_is_valid(s_patient_modal)) {
+        ui_patient_popup_cleanup();
+        return;
+    }
+
+    lv_anim_t a;
+
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, s_patient_overlay);
+    lv_anim_set_values(&a, 180, 0);
+    lv_anim_set_time(&a, 180);
+    lv_anim_set_exec_cb(&a, ui_anim_set_bg_opa);
+    lv_anim_start(&a);
+
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, s_patient_modal);
+    lv_anim_set_values(&a, 255, 0);
+    lv_anim_set_time(&a, 180);
+    lv_anim_set_exec_cb(&a, ui_anim_set_modal_opa);
+    lv_anim_start(&a);
+
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, s_patient_modal);
+    lv_anim_set_values(&a, 0, -32);
+    lv_anim_set_time(&a, 180);
+    lv_anim_set_exec_cb(&a, ui_anim_set_translate_y);
+    lv_anim_set_ready_cb(&a, ui_patient_popup_close_anim_done);
+    lv_anim_start(&a);
+}
+
+static void ui_event_patient_popup_cancel(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        ui_hide_patient_info_popup();
+    }
+}
+
+static void ui_show_patient_info_popup(void)
+{
+    lv_obj_t * scr = lv_scr_act();
+
+    if(s_patient_overlay != NULL && lv_obj_is_valid(s_patient_overlay)) {
+        lv_obj_move_foreground(s_patient_overlay);
+        return;
+    }
+
+    s_patient_overlay = lv_obj_create(scr);
+    lv_obj_remove_style_all(s_patient_overlay);
+    lv_obj_set_size(s_patient_overlay, LV_PCT(100), LV_PCT(100));
+    lv_obj_set_style_bg_color(s_patient_overlay, lv_color_hex(0x0B0F1A), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(s_patient_overlay, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(s_patient_overlay, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    s_patient_modal = lv_obj_create(s_patient_overlay);
+    lv_obj_set_size(s_patient_modal, 700, 460);
+    lv_obj_center(s_patient_modal);
+    lv_obj_clear_flag(s_patient_modal, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_radius(s_patient_modal, 22, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(s_patient_modal, lv_color_hex(0xF8FAFC), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(s_patient_modal, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(s_patient_modal, lv_color_hex(0x1E293B), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(s_patient_modal, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_color(s_patient_modal, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_opa(s_patient_modal, 70, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_width(s_patient_modal, 26, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_spread(s_patient_modal, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t * header = lv_obj_create(s_patient_modal);
+    lv_obj_set_size(header, 660, 56);
+    lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 12);
+    lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_radius(header, 14, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(header, lv_color_hex(0x0F766E), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(header, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(header, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t * title = lv_label_create(header);
+    lv_label_set_text(title, "Patient Medical Summary");
+    lv_obj_center(title);
+    lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(title, &lv_font_montserrat_26, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    s_patient_scroll = lv_obj_create(s_patient_modal);
+    lv_obj_set_size(s_patient_scroll, 660, 290);
+    lv_obj_align(s_patient_scroll, LV_ALIGN_TOP_MID, 0, 80);
+    lv_obj_set_style_radius(s_patient_scroll, 12, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(s_patient_scroll, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(s_patient_scroll, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(s_patient_scroll, lv_color_hex(0xCBD5E1), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(s_patient_scroll, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(s_patient_scroll, 14, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_row(s_patient_scroll, 8, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t * details = lv_label_create(s_patient_scroll);
+    lv_obj_set_width(details, 620);
+    lv_label_set_long_mode(details, LV_LABEL_LONG_WRAP);
+    lv_label_set_text(details,
+                      "Patient Details\n"
+                      "- Name: Hamza Ali Mazari\n"
+                      "- Patient ID: 16253487\n"
+                      "- Age / Gender: 30 / Male\n"
+                      "- Attending Doctor: Dr. Lisa\n\n"
+                      "Surgery\n"
+                      "- Procedure: Laparoscopic appendectomy\n"
+                      "- Date: 2026-05-29\n"
+                      "- Status: Recovery phase\n\n"
+                      "Primary Sickness\n"
+                      "- Diagnosis: Acute appendicitis with localized infection\n"
+                      "- Current symptoms: Mild abdominal pain, low appetite\n\n"
+                      "Medication\n"
+                      "- IV Ceftriaxone 1 g every 12 hours\n"
+                      "- Paracetamol 650 mg every 8 hours\n"
+                      "- Ondansetron 4 mg PRN for nausea\n\n"
+                      "Eating Diet\n"
+                      "- Soft diet, low spice\n"
+                      "- Hydration target: 2.0 L per day\n"
+                      "- Avoid oily and high-fiber foods for 5 days\n\n"
+                      "Discharge Plan\n"
+                      "- Planned discharge: 2026-06-12 (if stable)\n"
+                      "- Follow-up review: 7 days after discharge\n"
+                      "- Home advice: Daily wound check, no heavy lifting for 2 weeks");
+    lv_obj_set_style_text_color(details, lv_color_hex(0x0F172A), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(details, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t * cancel_btn = lv_btn_create(s_patient_modal);
+    lv_obj_set_size(cancel_btn, 170, 48);
+    lv_obj_align(cancel_btn, LV_ALIGN_BOTTOM_MID, 0, -16);
+    lv_obj_set_style_radius(cancel_btn, 14, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(cancel_btn, lv_color_hex(0xDC2626), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(cancel_btn, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_color(cancel_btn, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_opa(cancel_btn, 55, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_width(cancel_btn, 14, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_spread(cancel_btn, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_add_event_cb(cancel_btn, ui_event_patient_popup_cancel, LV_EVENT_ALL, NULL);
+
+    lv_obj_t * cancel_label = lv_label_create(cancel_btn);
+    lv_label_set_text(cancel_label, "Cancel");
+    lv_obj_center(cancel_label);
+    lv_obj_set_style_text_color(cancel_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(cancel_label, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_anim_t a;
+
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, s_patient_overlay);
+    lv_anim_set_values(&a, 0, 180);
+    lv_anim_set_time(&a, 220);
+    lv_anim_set_exec_cb(&a, ui_anim_set_bg_opa);
+    lv_anim_start(&a);
+
+    lv_obj_set_style_opa(s_patient_modal, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_translate_y(s_patient_modal, -36, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, s_patient_modal);
+    lv_anim_set_values(&a, 0, 255);
+    lv_anim_set_time(&a, 220);
+    lv_anim_set_exec_cb(&a, ui_anim_set_modal_opa);
+    lv_anim_start(&a);
+
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, s_patient_modal);
+    lv_anim_set_values(&a, -36, 0);
+    lv_anim_set_time(&a, 220);
+    lv_anim_set_exec_cb(&a, ui_anim_set_translate_y);
+    lv_anim_start(&a);
+}
+
 lv_obj_t * uic_Switch1;
 lv_obj_t * uic_Label13;
 lv_obj_t * uic_Button2;
-lv_obj_t * uic_Label7;
 lv_obj_t * uic_Label5;
 lv_obj_t * uic_Label6;
 lv_obj_t * uic_Panel5;
@@ -28,7 +236,6 @@ lv_obj_t * ui_Label4 = NULL;
 lv_obj_t * ui_Panel5 = NULL;
 lv_obj_t * ui_Label6 = NULL;
 lv_obj_t * ui_Label5 = NULL;
-lv_obj_t * ui_Label7 = NULL;
 lv_obj_t * ui_Button2 = NULL;
 lv_obj_t * ui_Label13 = NULL;
 lv_obj_t * ui_Image2 = NULL;
@@ -36,11 +243,14 @@ lv_obj_t * ui_Switch1 = NULL;
 lv_obj_t * ui_Label25 = NULL;
 lv_obj_t * ui_Button16 = NULL;
 lv_obj_t * ui_Label31 = NULL;
-lv_obj_t * ui_Label32 = NULL;
 lv_obj_t * ui_Panel4 = NULL;
 lv_obj_t * ui_Panel10 = NULL;
 lv_obj_t * ui_Label3 = NULL;
 lv_obj_t * ui_Label33 = NULL;
+lv_obj_t * ui_Panel11 = NULL;
+lv_obj_t * ui_Label32 = NULL;
+lv_obj_t * ui_Panel12 = NULL;
+lv_obj_t * ui_Label7 = NULL;
 // event funtions
 void ui_event_Button2(lv_event_t * e)
 {
@@ -60,26 +270,12 @@ void ui_event_Switch1(lv_event_t * e)
     }
 }
 
-void ui_event_Button16(lv_event_t * e)
+static void ui_event_Button16(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_CLICKED) {
-        if(ui_Panel3) lv_obj_clear_flag(ui_Panel3, LV_OBJ_FLAG_HIDDEN);
-        if(ui_Label2) lv_obj_clear_flag(ui_Label2, LV_OBJ_FLAG_HIDDEN);
-        if(ui_Label4) lv_obj_clear_flag(ui_Label4, LV_OBJ_FLAG_HIDDEN);
-        if(ui_Panel5) lv_obj_clear_flag(ui_Panel5, LV_OBJ_FLAG_HIDDEN);
-        if(ui_Label6) lv_obj_clear_flag(ui_Label6, LV_OBJ_FLAG_HIDDEN);
-        if(ui_Label5) lv_obj_clear_flag(ui_Label5, LV_OBJ_FLAG_HIDDEN);
-        if(ui_Label32) lv_obj_clear_flag(ui_Label32, LV_OBJ_FLAG_HIDDEN);
-
-        if(ui_Panel3) lv_obj_move_foreground(ui_Panel3);
-        if(ui_Label2) lv_obj_move_foreground(ui_Label2);
-        if(ui_Label4) lv_obj_move_foreground(ui_Label4);
-        if(ui_Panel5) lv_obj_move_foreground(ui_Panel5);
-        if(ui_Label6) lv_obj_move_foreground(ui_Label6);
-        if(ui_Label5) lv_obj_move_foreground(ui_Label5);
-        if(ui_Label32) lv_obj_move_foreground(ui_Label32);
+        ui_show_patient_info_popup();
     }
 }
 
@@ -95,7 +291,6 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_style_bg_main_stop(ui_Screen1, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_grad_stop(ui_Screen1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_grad_dir(ui_Screen1, LV_GRAD_DIR_HOR, LV_PART_MAIN | LV_STATE_DEFAULT);
-    ui_apply_dark_mode();
 
     ui_Panel1 = lv_obj_create(ui_Screen1);
     lv_obj_set_width(ui_Panel1, 675);
@@ -140,10 +335,14 @@ void ui_Screen1_screen_init(void)
     lv_obj_clear_flag(ui_Panel3, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_bg_color(ui_Panel3, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_Panel3, 200, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_color(ui_Panel3, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_opa(ui_Panel3, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(ui_Panel3, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_pad(ui_Panel3, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_shadow_color(ui_Panel3, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_opa(ui_Panel3, 140, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_width(ui_Panel3, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_spread(ui_Panel3, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_opa(ui_Panel3, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_width(ui_Panel3, 100, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_spread(ui_Panel3, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Label2 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label2, LV_SIZE_CONTENT);   /// 1
@@ -174,9 +373,9 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_style_bg_color(ui_Panel5, lv_color_hex(0x453939), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_Panel5, 150, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_shadow_color(ui_Panel5, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_opa(ui_Panel5, 130, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_width(ui_Panel5, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_spread(ui_Panel5, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_opa(ui_Panel5, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_width(ui_Panel5, 80, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_spread(ui_Panel5, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Label6 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label6, LV_SIZE_CONTENT);   /// 1
@@ -200,20 +399,6 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_style_text_opa(ui_Label5, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_Label5, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_Label7 = lv_label_create(ui_Screen1);
-    lv_obj_set_width(ui_Label7, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Label7, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label7, 5);
-    lv_obj_set_y(ui_Label7, -218);
-    lv_obj_set_align(ui_Label7, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Label7, "Nurse Call Dashboard");
-    lv_obj_set_style_text_color(ui_Label7, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_opa(ui_Label7, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_letter_space(ui_Label7, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_line_space(ui_Label7, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_decor(ui_Label7, LV_TEXT_DECOR_UNDERLINE, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_Label7, &lv_font_montserrat_46, LV_PART_MAIN | LV_STATE_DEFAULT);
-
     ui_Button2 = lv_btn_create(ui_Screen1);
     lv_obj_set_width(ui_Button2, 448);
     lv_obj_set_height(ui_Button2, 337);
@@ -229,9 +414,9 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_style_border_width(ui_Button2, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_side(ui_Button2, LV_BORDER_SIDE_FULL, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_shadow_color(ui_Button2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_opa(ui_Button2, 140, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_width(ui_Button2, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_spread(ui_Button2, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_opa(ui_Button2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_width(ui_Button2, 100, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_spread(ui_Button2, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Label13 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label13, LV_SIZE_CONTENT);   /// 1
@@ -254,7 +439,6 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_align(ui_Image2, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_Image2, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
     lv_obj_clear_flag(ui_Image2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_img_set_antialias(ui_Image2, false);
     lv_img_set_zoom(ui_Image2, 180);
 
     ui_Switch1 = lv_switch_create(ui_Screen1);
@@ -263,6 +447,10 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_x(ui_Switch1, 296);
     lv_obj_set_y(ui_Switch1, -331);
     lv_obj_set_align(ui_Switch1, LV_ALIGN_CENTER);
+    lv_obj_set_style_outline_color(ui_Switch1, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_opa(ui_Switch1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(ui_Switch1, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_pad(ui_Switch1, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Label25 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label25, LV_SIZE_CONTENT);   /// 1
@@ -278,7 +466,6 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_x(ui_Button16, -359);
     lv_obj_set_y(ui_Button16, -118);
     lv_obj_set_align(ui_Button16, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_Button16, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(ui_Button16, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_Button16, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_radius(ui_Button16, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -307,21 +494,6 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_style_text_font(ui_Label31, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_transform_angle(ui_Label31, 2700, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_Label32 = lv_label_create(ui_Screen1);
-    lv_obj_set_width(ui_Label32, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Label32, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label32, 118);
-    lv_obj_set_y(ui_Label32, -104);
-    lv_obj_set_align(ui_Label32, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Label32, "Patient's Overview");
-    lv_label_set_recolor(ui_Label32, "true");
-    lv_obj_set_style_text_color(ui_Label32, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_opa(ui_Label32, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_letter_space(ui_Label32, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_line_space(ui_Label32, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_decor(ui_Label32, LV_TEXT_DECOR_UNDERLINE, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_Label32, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
-
     ui_Panel4 = lv_obj_create(ui_Screen1);
     lv_obj_set_width(ui_Panel4, 406);
     lv_obj_set_height(ui_Panel4, 50);
@@ -329,6 +501,16 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_y(ui_Panel4, -329);
     lv_obj_set_align(ui_Panel4, LV_ALIGN_CENTER);
     lv_obj_clear_flag(ui_Panel4, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_outline_color(ui_Panel4, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_opa(ui_Panel4, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(ui_Panel4, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_pad(ui_Panel4, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_color(ui_Panel4, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_opa(ui_Panel4, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_width(ui_Panel4, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_spread(ui_Panel4, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_ofs_x(ui_Panel4, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_ofs_y(ui_Panel4, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Panel10 = lv_obj_create(ui_Screen1);
     lv_obj_set_width(ui_Panel10, 426);
@@ -340,6 +522,12 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_style_radius(ui_Panel10, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_Panel10, lv_color_hex(0xF61313), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_Panel10, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_color(ui_Panel10, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_opa(ui_Panel10, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(ui_Panel10, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_pad(ui_Panel10, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_color(ui_Panel10, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_opa(ui_Panel10, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Label3 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label3, LV_SIZE_CONTENT);   /// 1
@@ -362,6 +550,48 @@ void ui_Screen1_screen_init(void)
     lv_label_set_text(ui_Label33, "Active");
     lv_obj_set_style_text_font(ui_Label33, &lv_font_montserrat_26, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    ui_Panel11 = lv_obj_create(ui_Screen1);
+    lv_obj_set_width(ui_Panel11, 232);
+    lv_obj_set_height(ui_Panel11, 50);
+    lv_obj_set_x(ui_Panel11, 121);
+    lv_obj_set_y(ui_Panel11, -120);
+    lv_obj_set_align(ui_Panel11, LV_ALIGN_CENTER);
+    lv_obj_clear_flag(ui_Panel11, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_outline_color(ui_Panel11, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_opa(ui_Panel11, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(ui_Panel11, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_pad(ui_Panel11, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Label32 = lv_label_create(ui_Screen1);
+    lv_obj_set_width(ui_Label32, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label32, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label32, 120);
+    lv_obj_set_y(ui_Label32, -120);
+    lv_obj_set_align(ui_Label32, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label32, "Patient's Overview");
+    lv_obj_set_style_text_font(ui_Label32, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Panel12 = lv_obj_create(ui_Screen1);
+    lv_obj_set_width(ui_Panel12, 532);
+    lv_obj_set_height(ui_Panel12, 69);
+    lv_obj_set_x(ui_Panel12, 21);
+    lv_obj_set_y(ui_Panel12, -217);
+    lv_obj_set_align(ui_Panel12, LV_ALIGN_CENTER);
+    lv_obj_clear_flag(ui_Panel12, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_outline_color(ui_Panel12, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_opa(ui_Panel12, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(ui_Panel12, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_pad(ui_Panel12, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Label7 = lv_label_create(ui_Screen1);
+    lv_obj_set_width(ui_Label7, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label7, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label7, 16);
+    lv_obj_set_y(ui_Label7, -218);
+    lv_obj_set_align(ui_Label7, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label7, "Nurse Call Dashboard");
+    lv_obj_set_style_text_font(ui_Label7, &lv_font_montserrat_32, LV_PART_MAIN | LV_STATE_DEFAULT);
+
     lv_obj_add_event_cb(ui_Button2, ui_event_Button2, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Switch1, ui_event_Switch1, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Button16, ui_event_Button16, LV_EVENT_ALL, NULL);
@@ -374,7 +604,6 @@ void ui_Screen1_screen_init(void)
     uic_Panel5 = ui_Panel5;
     uic_Label6 = ui_Label6;
     uic_Label5 = ui_Label5;
-    uic_Label7 = ui_Label7;
     uic_Button2 = ui_Button2;
     uic_Label13 = ui_Label13;
     uic_Switch1 = ui_Switch1;
@@ -383,6 +612,8 @@ void ui_Screen1_screen_init(void)
 
 void ui_Screen1_screen_destroy(void)
 {
+    ui_patient_popup_cleanup();
+
     if(ui_Screen1) lv_obj_del(ui_Screen1);
 
     // NULL screen variables
@@ -405,8 +636,6 @@ void ui_Screen1_screen_destroy(void)
     ui_Label6 = NULL;
     uic_Label5 = NULL;
     ui_Label5 = NULL;
-    uic_Label7 = NULL;
-    ui_Label7 = NULL;
     uic_Button2 = NULL;
     ui_Button2 = NULL;
     uic_Label13 = NULL;
@@ -417,11 +646,14 @@ void ui_Screen1_screen_destroy(void)
     ui_Label25 = NULL;
     ui_Button16 = NULL;
     ui_Label31 = NULL;
-    ui_Label32 = NULL;
     ui_Panel4 = NULL;
     ui_Panel10 = NULL;
     ui_Label3 = NULL;
     ui_Label33 = NULL;
+    ui_Panel11 = NULL;
+    ui_Label32 = NULL;
+    ui_Panel12 = NULL;
+    ui_Label7 = NULL;
 
 }
 
